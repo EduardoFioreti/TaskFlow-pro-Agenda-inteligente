@@ -3,20 +3,23 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-# Configuração de caminhos para a Vercel
-# Em produção (Vercel), o SQLite só tem permissão de escrita na pasta /tmp/
+# Ajuste de caminhos para localizar as pastas corretamente na Vercel
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+
+# Configuração de caminhos do Banco
 if os.environ.get('VERCEL'):
     db_path = '/tmp/agenda.db'
 else:
-    # No seu PC, ele salva na pasta api/agenda.db
     db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'agenda.db')
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# --- MODELOS ---
+# --- MODELOS (Mantidos iguais) ---
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), unique=True, nullable=False)
@@ -29,13 +32,12 @@ class Tarefa(db.Model):
     categoria_nome = db.Column(db.String(50), nullable=False)
     concluida = db.Column(db.Boolean, default=False)
 
-# --- ROTAS ---
+# --- ROTAS (Mantidas iguais) ---
 @app.route('/')
 def index():
     filtro_cat = request.args.get('filtrar_categoria')
     filtro_data = request.args.get('filtrar_data')
     busca = request.args.get('q')
-
     query = Tarefa.query
     if filtro_cat and filtro_cat != 'Todas':
         query = query.filter_by(categoria_nome=filtro_cat)
@@ -43,10 +45,8 @@ def index():
         query = query.filter_by(data_evento=filtro_data)
     if busca:
         query = query.filter(Tarefa.descricao.contains(busca))
-
     tarefas = query.order_by(Tarefa.concluida, Tarefa.data_evento, Tarefa.hora_evento).all()
     categorias = Categoria.query.order_by(Categoria.nome).all() 
-
     return render_template('index.html', tarefas=tarefas, categorias=categorias)
 
 @app.route('/add_category', methods=['POST'])
@@ -74,7 +74,6 @@ def add():
     data_str = request.form.get('data')
     hora_str = request.form.get('hora')
     categoria = request.form.get('categoria')
-    
     if descricao and data_str and hora_str:
         try:
             agora = datetime.now()
@@ -106,11 +105,10 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('index'))
 
-# Inicialização do Banco
 with app.app_context():
     db.create_all()
 
-# Exporta o app para a Vercel
+# Export para Vercel (Obrigatório ser 'app')
 app = app
 
 if __name__ == '__main__':
