@@ -3,8 +3,12 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-# Inicialização do App - Busca templates e static na mesma pasta que este arquivo
-app = Flask(__name__)
+base_dir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__, 
+            template_folder=os.path.join(base_dir, 'templates'),
+            static_folder=os.path.join(base_dir, 'static'),
+            static_url_path='/static')
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 # Se estiver na Vercel, o banco precisa ir para a pasta /tmp/ (única que aceita escrita)
