@@ -12,7 +12,6 @@ else:
     db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'agenda.db')
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
-
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
