@@ -9,8 +9,7 @@
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/static/$1",
-      "headers": { "cache-control": "s-maxage=31536000, immutable" }
+      "dest": "/static/$1"
     },
     {
       "src": "/(.*)",
