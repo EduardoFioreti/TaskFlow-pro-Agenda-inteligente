@@ -8,6 +8,7 @@ from datetime import datetime
 if os.environ.get('VERCEL'):
     db_path = '/tmp/agenda.db'
 else:
+    # No seu PC, ele salva na pasta api/agenda.db
     db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'agenda.db')
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -106,12 +107,12 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('index'))
 
-# Inicialização do Banco para a Vercel
+# Inicialização do Banco
 with app.app_context():
     db.create_all()
 
-# Isso é necessário para a Vercel localizar o app
-app_handler = app
+# Exporta o app para a Vercel
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
