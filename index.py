@@ -1,6 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, redirect, url_for, send_from_directoryfrom flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -131,3 +130,7 @@ app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
