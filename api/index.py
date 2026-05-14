@@ -3,16 +3,20 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-# 1. Configuração do App
+# Configuração de caminhos para a Vercel
+# Em produção (Vercel), o SQLite só tem permissão de escrita na pasta /tmp/
+if os.environ.get('VERCEL'):
+    db_path = '/tmp/agenda.db'
+else:
+    db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'agenda.db')
+
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
-# 2. Configuração do Banco de Dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agenda.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # --- MODELOS ---
-
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), unique=True, nullable=False)
@@ -26,31 +30,20 @@ class Tarefa(db.Model):
     concluida = db.Column(db.Boolean, default=False)
 
 # --- ROTAS ---
-
 @app.route('/')
 def index():
-    # Captura filtros, busca e data da URL
     filtro_cat = request.args.get('filtrar_categoria')
     filtro_data = request.args.get('filtrar_data')
-    busca = request.args.get('q') # Barra de pesquisa
+    busca = request.args.get('q')
 
     query = Tarefa.query
-
-    # Filtro por Categoria
     if filtro_cat and filtro_cat != 'Todas':
         query = query.filter_by(categoria_nome=filtro_cat)
-    
-    # Filtro por Data
     if filtro_data:
         query = query.filter_by(data_evento=filtro_data)
-        
-    # Busca por Texto (Descricao)
     if busca:
         query = query.filter(Tarefa.descricao.contains(busca))
 
-    # ORDENAÇÃO INTELIGENTE: 
-    # 1º: Tarefas pendentes primeiro (concluida=False/0 vem antes de True/1)
-    # 2º: Data e Hora
     tarefas = query.order_by(Tarefa.concluida, Tarefa.data_evento, Tarefa.hora_evento).all()
     categorias = Categoria.query.order_by(Categoria.nome).all() 
 
@@ -86,21 +79,17 @@ def add():
         try:
             agora = datetime.now()
             data_usuario = datetime.strptime(f"{data_str} {hora_str}", '%Y-%m-%d %H:%M')
-            
-            if data_usuario < agora:
-                return redirect(url_for('index'))
-            
-            nova_tarefa = Tarefa(
-                descricao=descricao, 
-                data_evento=data_str, 
-                hora_evento=hora_str,
-                categoria_nome=categoria if categoria else 'Geral'
-            )
-            db.session.add(nova_tarefa)
-            db.session.commit()
-        except Exception as e:
-            print(f"Erro: {e}")
-            
+            if data_usuario >= agora:
+                nova_tarefa = Tarefa(
+                    descricao=descricao, 
+                    data_evento=data_str, 
+                    hora_evento=hora_str,
+                    categoria_nome=categoria if categoria else 'Geral'
+                )
+                db.session.add(nova_tarefa)
+                db.session.commit()
+        except:
+            pass
     return redirect(url_for('index'))
 
 @app.route('/complete/<int:id>')
@@ -117,9 +106,12 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('index'))
 
-# Inicialização do Banco
+# Inicialização do Banco para a Vercel
 with app.app_context():
     db.create_all()
+
+# Isso é necessário para a Vercel localizar o app
+app_handler = app
 
 if __name__ == '__main__':
     app.run(debug=True)
