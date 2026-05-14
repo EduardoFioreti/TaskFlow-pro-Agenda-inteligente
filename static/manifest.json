@@ -1,0 +1,17 @@
+{
+  "name": "TaskFlow Pro",
+  "short_name": "TaskFlow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#007bff",
+  "description": "Agenda de tarefas para portfólio profissional.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
