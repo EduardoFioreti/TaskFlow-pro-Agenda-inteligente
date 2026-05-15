@@ -23,4 +23,4 @@ Acesse o projeto online: [TaskFlow Pro na Vercel](https://task-flow-pro-agenda-i
 - `templates/`: Interface em Jinja2 (HTML dinâmico).
 
 ---
-*Projeto desenvolvido por Eduardo Fioreti como parte do portfólio de Engenharia de Software.*
+
