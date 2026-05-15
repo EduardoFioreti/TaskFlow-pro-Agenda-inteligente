@@ -1,18 +1,26 @@
 # 🚀 TaskFlow Pro - Agenda Inteligente
 
-O **TaskFlow Pro** é uma aplicação web de gerenciamento de tarefas desenvolvida em Python com Flask. O projeto foca em organização pessoal, permitindo a criação de categorias personalizadas e filtros inteligentes de data e busca.
+O **TaskFlow Pro** é uma aplicação web Full Stack desenvolvida para simplificar a organização pessoal. O foco deste projeto foi criar uma interface intuitiva com um backend robusto em Python, capaz de gerenciar tarefas, categorias e filtros em tempo real.
+
+## 🔗 Demonstração
+Acesse o projeto online: [TaskFlow Pro na Vercel](https://task-flow-pro-agenda-inteligente-ti.vercel.app/)
 
 ## 🛠️ Tecnologias Utilizadas
-* **Backend:** Python + Flask
-* **Banco de Dados:** SQLAlchemy (SQLite em ambiente de demo)
-* **Frontend:** HTML5 + CSS3 (Design Moderno & Responsivo)
-* **Deploy:** Vercel
+* **Backend:** Python 3.12 + Flask
+* **Banco de Dados:** SQLAlchemy (ORM) com SQLite
+* **Frontend:** HTML5, CSS3 (Design Moderno/Roxo) e JavaScript
+* **Infraestrutura:** Git para controle de versão e Vercel para Deploy Contínuo (CI/CD)
 
-## ✨ Funcionalidades
-- [x] Adicionar/Remover tarefas com data e hora.
-- [x] Criação dinâmica de categorias.
-- [x] Filtros por categoria e data específica.
-- [x] Busca em tempo real por descrição.
-- [x] Design responsivo para Mobile e Desktop.
+## ✨ Diferenciais Técnicos
+- **Rotas Dinâmicas:** Implementação de CRUD completo (Create, Read, Update, Delete) para tarefas e categorias.
+- **Filtros Avançados:** Lógica de busca por texto e filtragem por data/categoria no servidor.
+- **Experiência do Usuário (UX):** Interface responsiva adaptada para dispositivos móveis e desktop.
+- **Deploy em Nuvem:** Configuração de arquivos estáticos e ambiente de produção em servidor Serverless (Vercel).
 
-> **Nota de Deploy:** Para fins de demonstração no LinkedIn, este projeto utiliza SQLite em sistema de arquivos efêmero na Vercel.
+## 📂 Estrutura do Projeto
+- `index.py`: Coração da aplicação (Rotas e Lógica).
+- `static/`: Estilização CSS e recursos visuais.
+- `templates/`: Interface em Jinja2 (HTML dinâmico).
+
+---
+*Projeto desenvolvido por Eduardo Fioreti como parte do portfólio de Engenharia de Software.*
