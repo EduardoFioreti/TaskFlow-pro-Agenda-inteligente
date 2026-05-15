@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+# Configuração de caminhos absolutos para a Vercel não se perder
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__, 
@@ -11,11 +12,10 @@ app = Flask(__name__,
             static_url_path='/static')
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
-# Se estiver na Vercel, o banco precisa ir para a pasta /tmp/ (única que aceita escrita)
 if os.environ.get('VERCEL'):
     db_path = '/tmp/agenda.db'
 else:
-    db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'agenda.db')
+    db_path = os.path.join(base_dir, 'agenda.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -34,29 +34,26 @@ class Tarefa(db.Model):
     categoria_nome = db.Column(db.String(50), nullable=False)
     concluida = db.Column(db.Boolean, default=False)
 
-# --- ROTAS PRINCIPAIS ---
+# --- ROTA DE SEGURANÇA PARA CSS (Movi para cima do if __name__) ---
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory(os.path.join(base_dir, 'static'), path)
 
+# --- ROTAS PRINCIPAIS ---
 @app.route('/')
 def index():
-    # Captura os parâmetros de filtro e busca da URL
     filtro_cat = request.args.get('filtrar_categoria')
     filtro_data = request.args.get('filtrar_data')
     busca = request.args.get('q')
-
     query = Tarefa.query
-
-    # Lógica de Filtros
     if filtro_cat and filtro_cat != 'Todas':
         query = query.filter_by(categoria_nome=filtro_cat)
     if filtro_data:
         query = query.filter_by(data_evento=filtro_data)
     if busca:
         query = query.filter(Tarefa.descricao.contains(busca))
-
-    # Ordenação: Pendentes primeiro, depois por data e hora
     tarefas = query.order_by(Tarefa.concluida, Tarefa.data_evento, Tarefa.hora_evento).all()
     categorias = Categoria.query.order_by(Categoria.nome).all() 
-
     return render_template('index.html', tarefas=tarefas, categorias=categorias)
 
 @app.route('/add', methods=['POST'])
@@ -65,13 +62,10 @@ def add():
     data_str = request.form.get('data')
     hora_str = request.form.get('hora')
     categoria = request.form.get('categoria')
-    
     if descricao and data_str and hora_str:
         try:
-            # Validação simples: não permite datas passadas
             agora = datetime.now()
             data_usuario = datetime.strptime(f"{data_str} {hora_str}", '%Y-%m-%d %H:%M')
-            
             if data_usuario >= agora:
                 nova_tarefa = Tarefa(
                     descricao=descricao, 
@@ -83,7 +77,6 @@ def add():
                 db.session.commit()
         except Exception as e:
             print(f"Erro ao adicionar: {e}")
-            
     return redirect(url_for('index'))
 
 @app.route('/complete/<int:id>')
@@ -99,8 +92,6 @@ def delete(id):
     db.session.delete(tarefa)
     db.session.commit()
     return redirect(url_for('index'))
-
-# --- ROTAS DE CATEGORIA ---
 
 @app.route('/add_category', methods=['POST'])
 def add_category():
@@ -122,16 +113,11 @@ def delete_category(id):
     return redirect(url_for('index'))
 
 # --- INICIALIZAÇÃO ---
-
 with app.app_context():
     db.create_all()
 
-# Export para a Vercel localizar o objeto do servidor
+# Isso é o que a Vercel usa
 app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
